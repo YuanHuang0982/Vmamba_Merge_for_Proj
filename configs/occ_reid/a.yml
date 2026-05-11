@@ -1,0 +1,112 @@
+MODEL:
+  NAME: "vssm"
+  DEVICE_ID: "0"
+  PRETRAIN_CHOICE: "imagenet"
+  PRETRAIN_PATH: "/home/user/Project/MamReID/TransReID/vssm_base_0229_ckpt_epoch_237.pth"
+  DROP_PATH_RATE: 0.6
+
+  CAM_SCALE: 0.0
+  VIEW_SCALE: 0.0
+
+
+  NECK: "bnneck"
+  COS_LAYER: False
+  ID_LOSS_TYPE: "softmax"
+  METRIC_LOSS_TYPE: "triplet"
+  IF_LABELSMOOTH: "off"
+  IF_WITH_CENTER: "no"
+  NO_MARGIN: False
+  DIST_TRAIN: False
+
+  VSSM:
+    IN_CHANS: 3
+    PATCH_SIZE: 4
+    EMBED_DIM: 128
+
+    # ===== 반드시 ckpt와 일치 =====
+    DEPTHS: [2, 2, 15, 2]
+    SSM_RATIO: 2.0
+    # ============================
+
+    SSM_D_STATE: 1
+    SSM_DT_RANK: "auto"
+    SSM_CONV: 3
+    SSM_CONV_BIAS: False
+    SSM_FORWARDTYPE: "v05_noz"
+    MLP_RATIO: 4.0
+    DOWNSAMPLE: "v3"
+    PATCHEMBED: "v2"
+    NORM_LAYER: "ln2d"
+
+    # ===== Delta control (DIS 기반 델타 조절) =====
+    DELTA_CONTROL: "baseline"        # "baseline" | "dis_pos" | "dis_neg"
+    DELTA_LEARNABLE: False           # tau/gamma/smin/smax 학습
+
+    # 어디에 적용할지 (stage=0,1,2,3)
+    DELTA_APPLY_LAYERS: [2]      # 예: stage2, stage3에만
+
+    # 블록 인덱스(각 stage 내부 block idx)
+    # 비우면(stage 전체 적용)
+    DELTA_APPLY_BLOCKS: [10,11,12,13,14]          # [] 또는 생략 => 해당 stage의 모든 block에 적용
+    
+    TAU_INIT: 0.15
+    GAMMA_INIT: 1.0
+    SMIN_INIT: 0.95
+    SMAX_INIT: 2.5
+
+    TAU_MIN: 0.0
+    TAU_MAX: 1.0
+    GAMMA_MIN: 0.1
+    GAMMA_MAX: 50.0
+    SMIN_FLOOR: 0.4
+
+
+    DEBUG_DELTA: False
+    DEBUG_EVERY: 200
+
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST:  [256, 128]
+  PROB: 0.5
+  RE_PROB: 0.5
+  PADDING: 10
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD:  [0.229, 0.224, 0.225]
+
+DATASETS:
+  NAMES: "occ_reid"
+  ROOT_DIR: "/home/user/Project/MamReID/data"
+
+DATALOADER:
+  SAMPLER: "softmax_triplet"
+  NUM_INSTANCE: 4
+  NUM_WORKERS: 8
+
+SOLVER:
+  OPTIMIZER_NAME: "AdamW"
+  MAX_EPOCHS: 100
+  BASE_LR: 1e-4
+  IMS_PER_BATCH: 64
+  WARMUP_EPOCHS: 5
+  WARMUP_METHOD: "linear"
+  LARGE_FC_LR: False
+  BIAS_LR_FACTOR: 1
+  MOMENTUM: 0.9
+  WEIGHT_DECAY: 0.01
+  WEIGHT_DECAY_BIAS: 0.0
+  CHECKPOINT_PERIOD: 100
+  LOG_PERIOD: 100
+  EVAL_PERIOD: 100
+
+TEST:
+  EVAL: True
+  IMS_PER_BATCH: 256
+  RE_RANKING: False
+  WEIGHT: ""
+  NECK_FEAT: "before"
+  FEAT_NORM: "yes"
+  VISUALIZE: False
+  VIS_DIR: "../logs/occ_reid/vis2"
+  VIS_TOPK: 10
+
+OUTPUT_DIR: "../logs/occ_reid_base"
