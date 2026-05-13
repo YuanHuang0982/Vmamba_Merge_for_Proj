@@ -326,7 +326,7 @@ class VMambaReID(nn.Module):
         #     else:
         #         remapped[k] = v
 
-        new = remapped
+        #new = remapped
 
         # 디버그 확인용
         print("Remapped example keys:")
